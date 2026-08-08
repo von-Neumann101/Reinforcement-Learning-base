@@ -101,10 +101,36 @@ $$
 v _ { k + 1 } ( s ) = \operatorname* { m a x } _ { a \in \mathcal { A } } \; \left( \mathcal { R } _ { s } ^ { a } + \gamma \sum _ { s ^ { \prime } \in \mathcal { S } } \mathcal { P } _ { s s ^ { \prime } } ^ { a } v _ { k } ( s ^ { \prime } ) \right)
 $$
 ### Practice
+$\gamma=1$，撞墙的奖励$<0$
 ![[Pasted image 20260808140357.png|333]]
 ![[Pasted image 20260808143423.png|333]]
 ![[Pasted image 20260808143440.png|333]]
 ![[Pasted image 20260808143453.png|334]]
 ![[Pasted image 20260808143539.png|330]]
-# Summary 
+## Summary 
 ![[Pasted image 20260808143651.png]]
+需要仔细地思考Policy Iteration和Value Iteration的直接的区别，事实上当$k=1$的时候，Modified Policy Iteration就是Value Iteration
+# Extensions to Dynamic Programming
+## In-Place DP
+之前的$v_{k+1}(s)$需要$v_k(s')$来更新，我们可以直接在同一个$v$中更新
+思考：抛开效率不谈，两种方法有什么不同，在什么情况下差别会很大？（事实上，他们的结果是一样的）
+## Prioritised Sweeping
+之前的算法中，我们并未要求更新的顺序，但是对于某些情况（比如奖励稀疏），随机顺序可能需要计算大量的0，这是对算力的浪费——真正影响最终value function是变化量大的状态价值
+
+所以我们按照Bellman error来指导更新的顺序（使用优先队列来实现）
+$$
+\big|\operatorname* { m a x } _ { a \in \mathcal { A } }\big(\cal R_s^a+\gamma\sum_{s'\in\cal S}\cal P_{ss'}^av
+\big(s\big)'\big)-v\big(s\big)\big|
+$$
+## Real-Time DP
+让Agent自行探索环境，每个时间步获得$S_t,A_t,R_{t+1}$
+$$
+v  ( S_t ) = \operatorname* { m a x } _ { a \in \mathcal { A } } \; \left( \mathcal { R } _ { S_t } ^ { a } + \gamma \sum _ { s ^ { \prime } \in \mathcal { S } } \mathcal { P } _ { S_t s ^ { \prime } } ^ { a } v _ { k } ( s ^ { \prime } ) \right)
+$$
+也就是说，Agent走哪就更新哪（注意，这里仍然是MDP，Agent知道环境的所有信息，自然也知道$S_t$的所有后继及其信息）
+## Full-Width Backup
+我们注意到，之前的DP我们需要穷尽所有的可能性——每一个动作，每一个状态转移，这会导致维度灾难，大型问题几乎无法通过这种方法解决。
+为了解决这个问题，我们使用Sample Backup，我们每次只采样一种动作，采样一种状态转移，这会极大地减少情况数
+多次采样以后，我们可以近似出Full-Width Backup的结果
+# 压缩映射
+[[Reinforcement Learning/RL base/3.Planning by Dynamic Programming/lecture-3-planning-by-dynamic-programming-.pdf#page=35|lecture-3-planning-by-dynamic-programming-, 页面 35]]
