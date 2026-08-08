@@ -43,4 +43,32 @@ $$
 $$
 无论初始的$v_0,\pi_0$是什么，Policy Iteration的过程**总会使得初始策略$\pi_0$收敛到最佳策略$\pi_*$**，同时也会得到最优价值函数$v_*(s)$
 ### Example: Car Rental
-![[Pasted image 20260807155838.png]]
+**规则**：
+![[Pasted image 20260807155838.png|564]]
+
+**Policy Iteration**：
+![[Pasted image 20260807165252.png|575]]
+这里横坐标是第二个位置的车数，纵坐标是第一个位置的车数。图中的数字是调给位置2的车数
+### Policy Improvement
+证明贪心策略：
+$$
+\pi ^ { \prime } ( s ) = \underset { a \in \mathcal { A } } { \operatorname { a r g m a x } } \; q _ { \pi } ( s, a )
+$$
+是最优的
+
+由于
+$$
+q _ { \pi } ( s, \pi ^ { \prime } ( s ) ) = \operatorname* { m a x } _ { a \in \mathcal { A } } q _ { \pi } ( s, a ) \geq q _ { \pi } ( s, \pi ( s ) ) = v _ { \pi } ( s )
+$$
+所以
+$$
+\begin{aligned}
+v _ { \pi } ( s ) &\leq q _ { \pi } ( s, \pi ^ { \prime } ( s ) ) = \mathbb { E } _ { \pi ^ { \prime } } \left[ R _ { t + 1 } + \gamma v _ { \pi } ( S _ { t + 1 } ) \mid S _ { t } = s \right] \\
+&\leq \mathbb { E } _ { \pi ^ { \prime } } \left[ R _ { t + 1 } + \gamma q _ { \pi } ( S _ { t + 1 }, \pi ^ { \prime } ( S _ { t + 1 } ) ) \mid S _ { t } = s \right] \\
+&\leq \mathbb { E } _ { \pi ^ { \prime } } \left[ R _ { t + 1 } + \gamma R _ { t + 2 } + \gamma ^ { 2 } q _ { \pi } ( S _ { t + 2 }, \pi ^ { \prime } ( S _ { t + 2 } ) ) \mid S _ { t } = s \right] \\
+&\leq \mathbb { E } _ { \pi ^ { \prime } } \left[ R _ { t + 1 } + \gamma R _ { t + 2 } +... \ | \ S _ { t } = s \right] = v _ { \pi ^ { \prime } } ( s )
+\end{aligned}
+$$
+这里$\mathbb E_{\pi'}$指的是**当前的Action**采样于$\pi'$，那么为什么最后的式子成立呢？
+> 因为每次我们都会把$v_\pi$放缩为$q_\pi(s,\pi'(s))$，而这一步需要我们把当前State的Action替换为$\pi'(s)$。可以看到$S_{t+1}$的Action被替换为了$\pi'(S_{t+1})$，我们无限地进行下去，就得到了在未来的每一步都做$\pi'(s)$的Action的价值——这即是$v_{\pi'}(s)$
+
