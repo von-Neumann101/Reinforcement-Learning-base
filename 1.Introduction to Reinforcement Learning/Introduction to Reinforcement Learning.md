@@ -18,3 +18,5 @@ $$
 **Model**：一般分为两个
 - Transitions：$\mathcal P_{ss'}^a=\Pr[S'=s'\mid S=s,A=a]$ 预测下一个state
 - Rewards：$\mathcal R_s^a=\mathbb E[R\mid S=s,A=a]$ 预测接下来的reward
+
+#强化学习 #Markov
