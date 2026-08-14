@@ -25,7 +25,7 @@ while k < MAX_ITER do:
 ```
 由大数定理，当`N(s)=inf`，那么`V(s)`收敛到$v_\pi(s)$
 
-还有Every-Visit MC Policy Evaluation，即每次到了某个状态都计入，没有`visited[s]`
+也就是说，我们每次运行一个episode就会产生一个$G_t$，由于$v(s)=\mathbb E[G_t\mid S_t=s]$连续，所以我们通过求均值来近似一个$v$
 ## Increment Mean
 以下**只是一种数学上的重写**，本质和之前的方法没有区别（或者说是为了后续的公式进行一种等价变形）
 
@@ -59,3 +59,17 @@ $$
 - MC由于没有碰撞，他并不会受到一个大的负奖励
 - TD由于很容易预测到接下来会碰撞，它会受到一个很大的负奖励
 ### Driving Home Example
+![[Pasted image 20260814210409.png|574]]
+
+![[Pasted image 20260814212353.png|567]]
+代入$\alpha=1$，有如下公式：
+$$
+\begin{align}
+\text{MC:}&\ v(S_t)\longleftarrow G_t
+\\
+\text{TD}(0):&\ v(S_t)\longleftarrow R_{t+1}+\gamma v(S_{t+1})
+\end{align}
+$$
+这里我们不从RL的角度来看，而是从MC和TD两种方法的角度来看：
+- MC：由于运行完一个episode以后，得到了真实的结果。我们能直接把所有状态的预测时间都变为真实时间
+- TD：由于TD不需要运行整个episode，我们只需要往前一步。以`leaving office`的更新举例：我们向前一步，得知了`leaving`的耗时，然后我们预测接下来还有`35`分钟走，所以更新其为`40`（注意，我们是知道每个状态的value的）
