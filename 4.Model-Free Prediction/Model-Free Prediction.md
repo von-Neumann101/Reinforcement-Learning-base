@@ -73,3 +73,24 @@ $$
 这里我们不从RL的角度来看，而是从MC和TD两种方法的角度来看：
 - MC：由于运行完一个episode以后，得到了真实的结果。我们能直接把所有状态的预测时间都变为真实时间
 - TD：由于TD不需要运行整个episode，我们只需要往前一步。以`leaving office`的更新举例：我们向前一步，得知了`leaving`的耗时，然后我们预测接下来还有`35`分钟走，所以更新其为`40`（注意，我们是知道每个状态的value的）
+## Advantages and Disadvantages of MC vs. TD
+TD可以**一步一步学习**，也即不用知道最终的结果。但是MC就必须要知道结果才能学习——所以TD可以用在无终点（连续）环境，而MC只能用在有终点环境
+### Bias/Variance Trade-off
+#### Bias
+- MC：Return $G_t=R_{t+1}+\gamma R_{t+1}+...+\gamma^{T-1}R_{T}$是$v_\pi(S_t)$的无偏估计（定义）
+- TD：Target $R_{t+1}+\gamma v_\pi(S_{t+1})$由贝尔曼方程可得，是无偏估计。但是实际上$v_\pi$并非已知，而是TD自己估计出来的，这就会产生误差
+#### Variance
+由于TD估计的是$R_{t+1}+\gamma \hat v_\pi(S_{t+1})$，后面的 **“因为随机产生的Reward全部被压缩到一个估计的value中”**，导致方差很小
+
+比如到了$S_{t+1}$以后
+$$
+G_t=
+\left\{\begin{align}
+  -100,50\%\\
+  100,50\%
+\end{align}\right.
+
+$$
+那么$v_\pi(S_{t+1})=\mathbb E[G_t]=0$
+MC得到的$v_\pi$不是$+100$就是$-100$，每次都会巨幅抖动
+true TD由于知道$v_\pi(S_{t+1})=0$，他会直接使用这个，随机的波动直接消失了
