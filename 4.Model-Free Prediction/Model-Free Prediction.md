@@ -75,6 +75,8 @@ $$
 - TD：由于TD不需要运行整个episode，我们只需要往前一步。以`leaving office`的更新举例：我们向前一步，得知了`leaving`的耗时，然后我们预测接下来还有`35`分钟走，所以更新其为`40`（注意，我们是知道每个状态的value的）
 ## Advantages and Disadvantages of MC vs. TD
 TD可以**一步一步学习**，也即不用知道最终的结果。但是MC就必须要知道结果才能学习——所以TD可以用在无终点（连续）环境，而MC只能用在有终点环境
+
+但是TD对初值非常敏感（因为他是自举式的算法）
 ### Bias/Variance Trade-off
 #### Bias
 - MC：Return $G_t=R_{t+1}+\gamma R_{t+1}+...+\gamma^{T-1}R_{T}$是$v_\pi(S_t)$的无偏估计（定义）
@@ -94,3 +96,13 @@ $$
 那么$v_\pi(S_{t+1})=\mathbb E[G_t]=0$
 MC得到的$v_\pi$不是$+100$就是$-100$，每次都会巨幅抖动
 true TD由于知道$v_\pi(S_{t+1})=0$，他会直接使用这个，随机的波动直接消失了
+## Random Walk Example
+使用随机策略走：
+![[Pasted image 20260816084304.png]]
+TD(0)：（标的数字代表迭代的次数）
+![[Pasted image 20260816084224.png|488]]
+### MC vs. TD
+上述的例子，MC和TD的对比
+![[Pasted image 20260816084554.png|490]]
+## Batch MC and TD
+当有无穷多episode时，MC和TD都收敛到$v_\pi(s)$。但是通常我们只有有限个episode，我们就要多次使用同一个episode
