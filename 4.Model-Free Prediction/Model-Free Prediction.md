@@ -106,3 +106,97 @@ TD(0)：（标的数字代表迭代的次数）
 ![[Pasted image 20260816084554.png|490]]
 ## Batch MC and TD
 当有无穷多episode时，MC和TD都收敛到$v_\pi(s)$。但是通常我们只有有限个episode，我们就要多次使用同一个episode
+### Example: AB
+![[Pasted image 20260816151626.png|592]]
+- Monte-Carlo：
+  $V(A)=0$，这是由于所有的episode只有一个$A$，而且从他出发得到的value的确为0
+  $V(B)=\frac68$，直接运行MC，从B的价值就是求8次的均值，也就是$\frac68$
+- Temporal-Difference：
+  先看$V(B)$，由于TD(0)的target是$R_{t+1}+\gamma V(S_{t+1})$，而给出的episode中，B的下一步都是终点，所以每次更新$V(B)\longleftarrow V(B)+\alpha(R-V(B))$。最终我们运行无数次的Batch，TD必然收敛，也就是在每个batch运行后，结果应该不变。所以8个样本的TD error的和为0——易得$V(B)=\frac68$
+  $V(A)=0+\gamma V(B)=\frac68$
+  实际上，TD是在**拟合一个MDP**，就是图右的图
+### Certainty Equivalence
+**Monte-Carlo**：MC收敛到均方误差最小的解，即：
+$$
+\operatorname* { min } _ {V}\sum_{k=1}^K\sum_{t=1}^{T_k}(G_t^k-V(s_t^k))^2
+$$
+比如$V(A)=0$，对于A来说$G_t=0$，这显然是最小化均方误差的结果
+
+**Temporal-Difference**：TD收敛到Markov模型的最大似然，即$\text{MDP }<\cal S,\cal A, \hat { \mathcal { P } },\hat { \mathcal { R } },\gamma>$：
+$$
+\begin{aligned}
+\hat { \mathcal { P } } _ { s, s ^ { \prime } } ^ { a } &= \frac { 1 } { N ( s, a ) } \sum _ { k = 1 } ^ { K } \sum _ { t = 1 } ^ { T _ { k } } \mathbf { 1 } ( s _ { t } ^ { k }, a _ { t } ^ { k }, s _ { t + 1 } ^ { k } = s, a, s ^ { \prime } ) \\
+\hat { \mathcal { R } } _ { s } ^ { a } &= \frac { 1 } { N ( s, a ) } \sum _ { k = 1 } ^ { K } \sum _ { t = 1 } ^ { T _ { k } } \mathbf { 1 } ( s _ { t } ^ { k }, a _ { t } ^ { k } = s, a ) r _ { t } ^ { k }
+\end{aligned}
+$$
+
+因此我们能看出来**TD在Markov环境中更加有效，MC在非Markov环境中更有效**
+## Unified View
+- MC运行到底
+![[Pasted image 20260816163319.png|628]]
+- TD(0)往后一步
+![[Pasted image 20260816163354.png|622]]
+- DP考察所有可能情况
+![[Pasted image 20260816163419.png|596]]
+
+**总结**：
+![[Pasted image 20260816163514.png|493]]
+# $\text{TD}(\lambda)$
+## $n$-Step TD
+![[Pasted image 20260816163655.png|511]]
+比如$n=2$
+$$
+{ G _ { t } ^ { ( 2 ) } = R _ { t + 1 } + \gamma R _ { t + 2 } + \gamma ^ { 2 } V ( S _ { t + 2 } ) }
+$$
+
+定义$n$-step return：
+$$
+G _ { t } ^ { ( n ) } = R _ { t + 1 } + \gamma R _ { t + 2 } +... + \gamma ^ { n - 1 } R _ { t + n } + \gamma ^ { n } V ( S _ { t + n } )
+$$
+我们有$n$-step TD：
+$$
+V ( S _ { t } ) \gets V ( S _ { t } ) + \alpha \left( G _ { t } ^ { ( n ) } - V ( S _ { t } ) \right)
+$$
+### Large Random Walk Example
+![[Pasted image 20260816164630.png|543]]
+这里接近MC，会产生大方差，而一开始运行的不多，所以RMS error会很大。
+显然过大和过小的$n$都不是最优的，我们如何选择最优呢？
+### Averaging $n$-Step Returns 
+我们取多个$n$，然后计算回报的均值，比如$\frac12G_{t}^{(2)}+\frac12G_{t}^{(4)}$
+但是我们有什么方法可以快速地从所有$n$-step的信息呢？
+## Forward View of $\text{TD}(\lambda)$
+使用$\lambda$加权所有步长的TD：
+$$
+G _ { t } ^ { \lambda } = ( 1 - \lambda ) \sum _ { n = 1 } ^ { \infty } \lambda ^ { n - 1 } G _ { t } ^ { ( n ) }
+$$
+进而使用新的return更新：
+$$
+V ( S _ { t } ) \gets V ( S _ { t } ) + \alpha \left( G _ { t } ^ { \lambda } - V ( S _ { t } ) \right)
+$$
+因为使用了对未来的采样来更新，所以他叫做Forward View
+
+![[Pasted image 20260816170602.png|595]]
+## Backward View of $\text{TD}(\lambda)$
+### Eligibility Trace
+一种启发性方法
+![[Pasted image 20260816172004.png|588]]
+一个状态的资格迹来源于过去的积累，类似于神经一样，多次小刺激等于大刺激，长时间不刺激兴奋逐渐归零
+### Backward View TD(λ)
+每一个状态维护一个资格迹，把资格迹加入更新：
+$$
+\begin{align}
+&\delta _ { t } = R _ { t + 1 } + \gamma V ( S _ { t + 1 } ) - V ( S _ { t } )
+\\
+&V ( s ) \leftarrow V ( s ) + \alpha \delta _ { t } E _ { t } ( s )
+\end{align}
+$$
+注意，我们是对每一个状态更新的，而且未来的迹一定为0。所以**按照之前状态的访问次数，把$\delta_t$传播到过去的状态的value**——这也是为什么它叫做Backward View
+## Summary
+$$
+\sum _ { t = 1 } ^ { T } \alpha \delta _ { t } E _ { t } ( s ) = \sum _ { t = 1 } ^ { T } \alpha \left( G _ { t } ^ { \lambda } - V ( S _ { t } ) \right) \mathbf { 1 } ( S _ { t } = s )
+$$
+这也就告诉我们，所谓的Backward和Forward只不过是解释$\text{TD}(\lambda)$的两种视角，他们本质是一样的：
+- **Forward**：一次性看未来，然后计算总的信息
+- **Backward**：每次看到一个新的未来，就把信息传回去
+
+![[Pasted image 20260816173513.png|689]]
